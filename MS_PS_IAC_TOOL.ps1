@@ -1,7 +1,26 @@
-# You can find your prisma cloud api url here: https://prisma.pan.dev/api/cloud/api-urls
+#!/usr/bin/env pwsh
+# Tag data for primsa cloud console
 
-# Optionally you could delete the Read-Host Cmd-let and put your Prisma Cloud API URL in "" below:
+################################################ OPTIONAL VARIABLE ASSIGNMENT ###################################################################
+# Hardcode these variables into script if you'd like. If you don't then it will prompt you each time you run the script.
+
+# Your Name
+$pcee_iac_name = Read-Host "Enter your Name"
+
+# Your Department
+$pcee_iac_department = Read-Host "Enter your Department"
+
+# Your Prisma Cloud API URL. You can find your prisma cloud api url here: https://prisma.pan.dev/api/cloud/api-urls
 $pcee_api_url = Read-Host "Enter your Prisma Cloud API Url"
+
+
+# Optional Hardcode Assignment. There are security things you should keep in mind if doing this
+$pcee_accesskey = Read-Host "Enter your Prisma Cloud Access Key" -AsSecureString
+$pcee_secretkey = Read-Host "Enter your Prisma Cloud Secret Key" -AsSecureString
+
+################################################ END OF VARIABLE ASSIGNMENT #####################################################################
+
+$pcee_iac_environment = Read-Host "Enter the Environment where you're intending to Deploy"
 
 # Checking user input to ensure it matches
 if ( [string]::IsNullOrEmpty($pcee_api_url) )
@@ -16,7 +35,6 @@ if ( $pcee_api_url -notlike "https://api*.prismacloud.io" )
  exit
 }
 
-$pcee_accesskey = Read-Host "Enter your Prisma Cloud Access Key" -AsSecureString
 
 if (($pcee_accesskey.length -gt 40) -or ($pcee_accesskey.length -lt 35))
 {
@@ -24,7 +42,6 @@ if (($pcee_accesskey.length -gt 40) -or ($pcee_accesskey.length -lt 35))
  exit
 }
 
-$pcee_secretkey = Read-Host "Enter your Prisma Cloud Secret Key" -AsSecureString
 
 # Debugging the secret key input
 if (($pcee_secretkey.length -gt 31) -or ($pcee_secretkey.length -lt 27))
@@ -32,13 +49,6 @@ if (($pcee_secretkey.length -gt 31) -or ($pcee_secretkey.length -lt 27))
  Write-Host "Check your secret key entry becuse it doesn't appear to be the correct length"
  exit
 }
-
-# Tag data for primsa cloud console
-$pcee_iac_name = Read-Host "Enter your Name"
-$pcee_iac_environment = Read-Host "Enter the Environment where you're intending to Deploy"
-$pcee_iac_department = Read-Host "Enter your Department"
-
-
 
 
 # Options for IaC file types
@@ -81,16 +91,11 @@ if ( $pcee_scan_asset_dir -like ".*" ){
  exit
 }
 
-$pcee_timestamp = Get-Date `
-    -Format o | ForEach-Object { $_ -replace ":", "." }
+$pcee_timestamp = Get-Date -Format o | ForEach-Object { $_ -replace ":", "." }
 
-Compress-Archive `
-    -Path $pcee_scan_asset_dir `
-    -DestinationPath C:\Windows\Temp\Prisma-Cloud-IaC\("PCEE_IAC_TEMP" + $pcee_timestamp.zip + ".zip")
+Compress-Archive -Path $pcee_scan_asset_dir -DestinationPath ("C:\Windows\Temp\PCEE_IAC_TEMP" + $pcee_timestamp + ".zip")
 
-$pcee_scan_asset = ("C:\Windows\Temp\Prisma-Cloud-IaC\" + "PCEE_IAC_TEMP" + $pcee_timestamp + ".zip")
-
-
+$pcee_scan_asset = ("C:\Windows\Temp\PCEE_IAC_TEMP" + $pcee_timestamp + ".zip")
 $pcee_asset_name = Split-Path $pcee_scan_asset_dir -Leaf  
 
 # These variables are really only applicable to CI/CD workflow implementations. 
@@ -117,12 +122,16 @@ $pcee_auth_body = $pcee_auth_body |ConvertTo-Json
 
 Write-Host "Authenticating to Prisma Cloud"
 
-$pcee_auth_login=Invoke-RestMethod `
-    -Uri $($pcee_api_url + "/login") `
-    -body $pcee_auth_body -Method POST `
-    -Headers @{"Content-Type"="application/json"}
+$pcee_auth_login=Invoke-RestMethod -Uri $($pcee_api_url + "/login") -body $pcee_auth_body -Method POST -Headers @{"Content-Type"="application/json"}
 
+if ($lastExitCode -eq "0") {
+    Write-Host "Authenticated"
+}
 
+if ($lastExitCode -eq "1") {
+    Write-Host "Issue with reaching the Prisma Cloud Console. PANW Engineers check to see if Global Protect is enabled."
+    exit
+}
 
 $pcee_iac_payload = [ordered]@{
     data = [ordered]@{
@@ -186,7 +195,11 @@ $pcee_temp_json=$pcee_temp_payload | ConvertTo-Json -Depth 99
 Write-Host "Uploading the IaC Project Directory securely to a private unique URL"
 
 # uploads the file
-curl -s -X PUT $pcee_scan_url -T $pcee_scan_asset
+
+echo $pcee_scan_url > ./url_file.txt
+Invoke-RestMethod -Method PUT -Uri $pcee_scan_url -InFile $pcee_scan_asset
+
+
 
 Write-Host "Starting scan"
 
@@ -207,6 +220,7 @@ $pcee_scan_status=Invoke-RestMethod `
 $pcee_scan_check=$pcee_scan_status.data.attributes.status
 
 function Get-IaC-Scan-Status {
+ $pcee_scan_check=$pcee_scan_status.data.attributes.status
   if ( $pcee_scan_check -eq "processing" ){
     Write-Host "processing"
     Start-Sleep -Seconds 10
@@ -270,21 +284,9 @@ While($pcee_report_selection -ne "Y" ){
     If($pcee_report_selection -eq "N"){Return}
 }
 
-# Clean up the temp zip created
-Get-ChildItem `
-    -path "C:\Windows\Temp\Prisma-Cloud-IaC*" `
-    -recurse | 
-        where-object {$_} | 
-            remove-item `
-                -force `
-                -recurse
-# Remove the temp directory Prisma-Cloud-Iac
+Remove-Item -Path $pcee_scan_asset -Force 
 
-Remove-Item `
-    -Path "C:\Windows\Temp\Prisma-Cloud-IaC\" `
-    -Force 
+Write-Host "Thanks for checking your IaC Files!"
 
-
-Write-Host "Thanks for checking your IaC File!"
 
 exit
