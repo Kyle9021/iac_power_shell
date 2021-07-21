@@ -281,7 +281,7 @@ While($pcee_report_selection -ne "Y" ){
               } 
             N {Write-Host "Exiting out of script"} 
         } 
-    If($pcee_report_selection -eq "N"){Return}
+    If ($pcee_report_selection -eq "N"){Return}
 }
 
 Remove-Item -Path $pcee_scan_asset -Force 
