@@ -269,6 +269,22 @@ While($pcee_report_selection -ne "Y" ){
         } 
     If($pcee_report_selection -eq "N"){Return}
 }
+
+# Clean up the temp zip created
+Get-ChildItem `
+    -path "C:\Windows\Temp\Prisma-Cloud-IaC*" `
+    -recurse | 
+        where-object {$_} | 
+            remove-item `
+                -force `
+                -recurse
+# Remove the temp directory Prisma-Cloud-Iac
+
+Remove-Item `
+    -Path "C:\Windows\Temp\Prisma-Cloud-IaC\" `
+    -Force 
+
+
 Write-Host "Thanks for checking your IaC File!"
 
 exit
