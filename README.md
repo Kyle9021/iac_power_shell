@@ -13,7 +13,7 @@ You may need to run this with admin level permissions.
 It will scan IaC project directories or directories which contain IaC files and provide you with a summary of the vulnerabilities contained within those files. It will also create an entry for the scan in the Prisma Cloud Enterprise Edition Console under Inventory > DevOps
 
 
-## Intructions
+## Instructions
 Copy the script and/or download it. 
 
 If you copy the script from the raw code. Ensure you save it with `.ps1` extension
