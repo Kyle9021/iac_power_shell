@@ -6,7 +6,7 @@ I wrote this tool for the IT community who are actively working with IaC files a
 
 ## Notes
 
-You may need to run this with admin level permissions. 
+You may need to run this with local admin level permissions. (Right click script and choose run as admin)
 
 ## Purpose
 
@@ -18,7 +18,7 @@ Copy the script and/or download it.
 
 If you copy the script from the raw code. Ensure you save it with `.ps1` extension
 
-Double-click your script and enter the information as you are prompted.  
+Double-click your script and enter the information as you are prompted in the powershell window that will pop-up. 
 
 Optionally you may want to assign the variables so you don't need to enter that information every timme you run it. If you decide to go this route, ensure you take appropriate steps to secure this script. 
 
