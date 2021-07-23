@@ -65,7 +65,7 @@ if ( [string]::IsNullOrEmpty($pcee_template_type) ){
  Write-Host "Invalid Selection Type"
  exit
 }
-#$pcee_scan_asset_dir = Read-Host "Enter the File Path to the Folder containing the IaC files"
+$pcee_scan_asset_dir = Read-Host "Enter the File Path to the Folder containing the IaC files"
 # Lazy check to ensure it's not a file. Issue if you have . in your file directory names; not solving for that right now
 if ( $pcee_scan_asset_dir -like ".*" ){
  Write-Host "Either you named your directories with a \'.\' in them or you selected a file. It should be a directory. If you named your directories with \'.\' in them move the files to a different folder"
