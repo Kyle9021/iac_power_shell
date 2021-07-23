@@ -71,8 +71,10 @@ if ( $pcee_scan_asset_dir -like ".*" ){
  Write-Host "Either you named your directories with a \'.\' in them or you selected a file. It should be a directory. If you named your directories with \'.\' in them move the files to a different folder"
  exit
 }
-
-
+if ( [string]::IsNullOrEmpty($pcee_scan_asset_dir) ){
+ Write-Host "You must specify the directory path to the Iac Files. Example C:\Users\Path\To\Dir"
+ exit
+}
 $pcee_timestamp = Get-Date -Format o | ForEach-Object { $_ -replace ":", "." }
 
 Compress-Archive -Path $pcee_scan_asset_dir -DestinationPath ("C:\Windows\Temp\PCEE_IAC_TEMP" + $pcee_timestamp + ".zip")
