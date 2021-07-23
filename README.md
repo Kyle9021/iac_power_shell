@@ -1,6 +1,6 @@
 # PCEE IaC Powershell Script
 
-For Windows Users
+For Windows Users - Confirmed working on July 23rd 2021. Please confirm your download is after this date. 
 
 I wrote this tool for the IT community who are actively working with IaC files and who have access to an instance of Prisma Cloud Enterprise. This avoids the need to install docker, manage python libraries, or even use the terminal (after install). Simple implementations, without the risk of additional libraries or software. There are no dependencies for this script other than powershell. 
 
